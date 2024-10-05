@@ -71,3 +71,6 @@ To further enhance the app's design and functionality, consider the following ne
 8. **Push Notifications**: Integrate push notifications using Expo's notification services to improve user engagement.
 
 By focusing on these areas, we can significantly enhance the app's overall quality, user experience, and market readiness.
+
+
+Public work sample -- sharefy.co
