@@ -74,3 +74,4 @@ By focusing on these areas, we can significantly enhance the app's overall quali
 
 
 Public work sample -- sharefy.co
+In the future if I had more time, I would like to incorporate more of the animations and transitions that occur on sharefy.co. It was also written in React (TypeScript) but not specifically React Native
