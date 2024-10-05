@@ -1,76 +1,67 @@
-import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 import Animated, {
-  interpolate,
-  useAnimatedRef,
-  useAnimatedStyle,
-  useScrollViewOffset,
-} from 'react-native-reanimated';
+  useSharedValue,
+  useAnimatedScrollHandler,
+} from "react-native-reanimated";
+import { DraggableHeader } from "./DraggableHeader";
 
-import { ThemedView } from '@/components/ThemedView';
+interface ParallaxScrollViewProps {
+  headerMinHeight: number;
+  headerMaxHeight: number;
+  headerContent: React.ReactNode;
+  children: React.ReactNode;
+}
 
-const HEADER_HEIGHT = 250;
-
-type Props = PropsWithChildren<{
-  headerImage: ReactElement;
-  headerBackgroundColor: { dark: string; light: string };
-}>;
-
-export default function ParallaxScrollView({
+export function ParallaxScrollView({
+  headerMinHeight,
+  headerMaxHeight,
+  headerContent,
   children,
-  headerImage,
-  headerBackgroundColor,
-}: Props) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const scrollOffset = useScrollViewOffset(scrollRef);
+}: ParallaxScrollViewProps) {
+  const scrollY = useSharedValue(0);
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(
-            scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
-          ),
-        },
-        {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
-        },
-      ],
-    };
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
   });
 
   return (
-    <ThemedView style={styles.container}>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-        <Animated.View
-          style={[
-            styles.header,
-            { backgroundColor: headerBackgroundColor[colorScheme] },
-            headerAnimatedStyle,
-          ]}>
-          {headerImage}
-        </Animated.View>
-        <ThemedView style={styles.content}>{children}</ThemedView>
+    <View style={styles.container}>
+      <DraggableHeader
+        minHeight={headerMinHeight}
+        maxHeight={headerMaxHeight}
+        scrollY={scrollY}
+      >
+        {/* Ensure headerContent is wrapped in a Text component if it's a string */}
+        {typeof headerContent === "string" ? (
+          <Text style={styles.headerText}>{headerContent}</Text>
+        ) : (
+          headerContent
+        )}
+      </DraggableHeader>
+      <Animated.ScrollView
+        style={styles.scrollView}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        <View style={{ height: headerMaxHeight }} />
+        {children}
       </Animated.ScrollView>
-    </ThemedView>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    height: 250,
-    overflow: 'hidden',
-  },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: 32,
-    gap: 16,
-    overflow: 'hidden',
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
   },
 });
